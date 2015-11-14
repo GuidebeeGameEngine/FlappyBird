@@ -22,7 +22,7 @@ public class Ground  extends Actor {
         setSize(Configuration.SCREEN_WIDTH,
                 groundTextRegion.getRegionHeight());
         setPosition(0, 0);
-        moveStep=groundTextRegion.getRegionWidth()/12;
+        moveStep=groundTextRegion.getRegionWidth()/16;
         offset=0;
 
     }
@@ -39,6 +39,6 @@ public class Ground  extends Actor {
         for(int i=-1;i<size;i++) {
             batch.draw(groundTextRegion,offset + i*backWidth,0);
         }
-        batch.draw(groundTextRegion,backWidth-offset,0);
+
     }
 }

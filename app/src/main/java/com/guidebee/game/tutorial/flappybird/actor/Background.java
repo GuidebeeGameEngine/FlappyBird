@@ -6,19 +6,26 @@ import com.guidebee.game.graphics.TextureRegion;
 import com.guidebee.game.scene.Actor;
 import com.guidebee.game.tutorial.flappybird.Configuration;
 
+import org.w3c.dom.Text;
+
 import static com.guidebee.game.GameEngine.assetManager;
 
 
 public class Background extends Actor {
 
     private final TextureRegion backgroundTextRegion;
+    private final TextureRegion skyTextureRegion;
     private final int moveStep=2;
     private int offset;
+    private int groundHeight;
 
     public Background(){
         super("Background");
         TextureAtlas textureAtlas=assetManager.get("flappybird.atlas",TextureAtlas.class);
         backgroundTextRegion=textureAtlas.findRegion("bg");
+        skyTextureRegion=textureAtlas.findRegion("sky");
+        TextureRegion groundTextRegion =textureAtlas.findRegion("ground");
+        groundHeight=groundTextRegion.getRegionHeight();
         setSize(Configuration.SCREEN_WIDTH,
                 Configuration.SCREEN_HEIGHT);
 
@@ -27,12 +34,26 @@ public class Background extends Actor {
     @Override
     public void draw (Batch batch, float parentAlpha){
         int backWidth=backgroundTextRegion.getRegionWidth();
-        int size=Configuration.SCREEN_WIDTH/backWidth;
-        if(size*backWidth<Configuration.SCREEN_WIDTH) size++;
+        int skyHeight=skyTextureRegion.getRegionHeight();
+        int widthSize=Configuration.SCREEN_WIDTH/backWidth;
+        int remainSize=Configuration.SCREEN_WIDTH-groundHeight
+                -backgroundTextRegion.getRegionHeight();
+        int skySize=0;
+        if(remainSize>0){
+            skySize=remainSize/skyHeight;
+            if(skySize*skyHeight<remainSize) skySize++;
+        }
+        if(widthSize*backWidth<Configuration.SCREEN_WIDTH) widthSize++;
+
+
         offset+=moveStep;
         offset %= backWidth;
-        for(int i=0;i<size+1;i++) {
-            batch.draw(backgroundTextRegion,-offset +i*backWidth,0);
+        for(int i=0;i<widthSize+1;i++) {
+            batch.draw(backgroundTextRegion,-offset +i*backWidth,groundHeight);
+            for(int j=0;j<skyHeight;j++){
+                batch.draw(skyTextureRegion,-offset +i*backWidth,groundHeight
+                        +backgroundTextRegion.getRegionHeight()+j*skyHeight);
+            }
         }
     }
 }

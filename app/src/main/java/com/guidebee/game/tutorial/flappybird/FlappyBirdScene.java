@@ -1,6 +1,7 @@
 package com.guidebee.game.tutorial.flappybird;
 
 import com.guidebee.game.audio.Music;
+import com.guidebee.game.camera.viewports.ScreenViewport;
 import com.guidebee.game.camera.viewports.StretchViewport;
 import com.guidebee.game.scene.Scene;
 import com.guidebee.game.tutorial.flappybird.actor.Background;
@@ -23,8 +24,7 @@ public class FlappyBirdScene extends Scene {
     private final Music music;
 
     public FlappyBirdScene(){
-        super(new StretchViewport(Configuration.SCREEN_WIDTH,
-                Configuration.SCREEN_HEIGHT));
+        super(new ScreenViewport());
         //play background music
         music=assetManager.get("music.mp3", Music.class);
         music.setLooping(true);

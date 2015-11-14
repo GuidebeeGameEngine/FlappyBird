@@ -1,0 +1,60 @@
+flappybird.png
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bg
+  rotate: false
+  xy: 2, 2
+  size: 288, 512
+  orig: 288, 512
+  offset: 0, 0
+  index: -1
+bird
+  rotate: false
+  xy: 446, 46
+  size: 34, 24
+  orig: 34, 24
+  offset: 0, 0
+  index: -1
+birdanimation
+  rotate: false
+  xy: 340, 106
+  size: 102, 24
+  orig: 102, 24
+  offset: 0, 0
+  index: -1
+bottomtube
+  rotate: false
+  xy: 292, 132
+  size: 52, 320
+  orig: 52, 320
+  offset: 0, 0
+  index: -1
+gameover
+  rotate: false
+  xy: 292, 2
+  size: 192, 42
+  orig: 192, 42
+  offset: 0, 0
+  index: -1
+ground
+  rotate: false
+  xy: 2, 516
+  size: 336, 112
+  orig: 336, 112
+  offset: 0, 0
+  index: -1
+playbtn
+  rotate: false
+  xy: 340, 46
+  size: 104, 58
+  orig: 104, 58
+  offset: 0, 0
+  index: -1
+toptube
+  rotate: false
+  xy: 346, 132
+  size: 52, 320
+  orig: 52, 320
+  offset: 0, 0
+  index: -1

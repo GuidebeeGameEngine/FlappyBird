@@ -17,15 +17,14 @@ public class Background extends Actor {
     private final TextureRegion skyTextureRegion;
     private final int moveStep=2;
     private int offset;
-    private int groundHeight;
+
 
     public Background(){
         super("Background");
-        TextureAtlas textureAtlas=assetManager.get("flappybird.atlas",TextureAtlas.class);
+        TextureAtlas textureAtlas=assetManager.get("flappybird.atlas", TextureAtlas.class);
         backgroundTextRegion=textureAtlas.findRegion("bg");
         skyTextureRegion=textureAtlas.findRegion("sky");
-        TextureRegion groundTextRegion =textureAtlas.findRegion("ground");
-        groundHeight=groundTextRegion.getRegionHeight();
+
         setSize(Configuration.SCREEN_WIDTH,
                 Configuration.SCREEN_HEIGHT);
 
@@ -36,7 +35,7 @@ public class Background extends Actor {
         int backWidth=backgroundTextRegion.getRegionWidth();
         int skyHeight=skyTextureRegion.getRegionHeight();
         int widthSize=Configuration.SCREEN_WIDTH/backWidth;
-        int remainSize=Configuration.SCREEN_WIDTH-groundHeight
+        int remainSize=Configuration.SCREEN_WIDTH-Configuration.groundHeight
                 -backgroundTextRegion.getRegionHeight();
         int skySize=0;
         if(remainSize>0){
@@ -49,9 +48,9 @@ public class Background extends Actor {
         offset+=moveStep;
         offset %= backWidth;
         for(int i=0;i<widthSize+1;i++) {
-            batch.draw(backgroundTextRegion,-offset +i*backWidth,groundHeight);
+            batch.draw(backgroundTextRegion,-offset +i*backWidth,Configuration.groundHeight);
             for(int j=0;j<skyHeight;j++){
-                batch.draw(skyTextureRegion,-offset +i*backWidth,groundHeight
+                batch.draw(skyTextureRegion,-offset +i*backWidth,Configuration.groundHeight
                         +backgroundTextRegion.getRegionHeight()+j*skyHeight);
             }
         }

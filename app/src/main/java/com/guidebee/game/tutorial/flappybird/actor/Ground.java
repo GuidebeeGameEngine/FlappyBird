@@ -22,7 +22,7 @@ public class Ground  extends Actor {
         setSize(Configuration.SCREEN_WIDTH,
                 groundTextRegion.getRegionHeight());
         setPosition(0, 0);
-        moveStep=groundTextRegion.getRegionWidth()/16;
+        moveStep=Configuration.MOVE_STEP;
         offset=0;
 
     }

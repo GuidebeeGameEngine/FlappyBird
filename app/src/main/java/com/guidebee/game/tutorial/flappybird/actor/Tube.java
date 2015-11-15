@@ -61,6 +61,9 @@ public class Tube extends Actor {
     }
 
 
+    public int getScore(){
+        return score+1;
+    }
 
     public void generateLevelData(){
         tubePositionArray.clear();

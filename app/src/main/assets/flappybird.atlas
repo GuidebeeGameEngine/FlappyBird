@@ -11,14 +11,14 @@ bg
   index: -1
 bird
   rotate: false
-  xy: 216, 742
+  xy: 266, 708
   size: 34, 24
   orig: 34, 24
   offset: 0, 0
   index: -1
 birdanimation
   rotate: false
-  xy: 110, 768
+  xy: 110, 784
   size: 102, 24
   orig: 102, 24
   offset: 0, 0
@@ -28,6 +28,13 @@ bottomtube
   xy: 2, 664
   size: 52, 320
   orig: 52, 320
+  offset: 0, 0
+  index: -1
+coin
+  rotate: false
+  xy: 216, 724
+  size: 32, 32
+  orig: 32, 32
   offset: 0, 0
   index: -1
 gameover
@@ -44,9 +51,16 @@ ground
   orig: 288, 112
   offset: 0, 0
   index: -1
-playbtn
+numbers
   rotate: false
   xy: 110, 708
+  size: 154, 14
+  orig: 154, 14
+  offset: 0, 0
+  index: -1
+playbtn
+  rotate: false
+  xy: 110, 724
   size: 104, 58
   orig: 104, 58
   offset: 0, 0
@@ -67,7 +81,7 @@ toptube
   index: -1
 tube
   rotate: false
-  xy: 216, 708
+  xy: 250, 734
   size: 52, 32
   orig: 52, 32
   offset: 0, 0

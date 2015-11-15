@@ -29,9 +29,13 @@ public class Tube extends Actor {
 
     private final Rectangle topRect=new Rectangle();
     private final Rectangle bottomRect=new Rectangle();
+    private final Rectangle scoreRect=new Rectangle();
     private boolean stopMoving=false;
 
     private final Sound hitSound;
+    private final Sound pointSound;
+
+    private int score=-1;
 
     public Tube(){
         super("Tube");
@@ -40,6 +44,7 @@ public class Tube extends Actor {
         bottomTubeTextRegion =textureAtlas.findRegion("bottomtube");
         topTubeTextRegion=textureAtlas.findRegion("toptube");
         hitSound = assetManager.get("sfx_hit.ogg", Sound.class);
+        pointSound = assetManager.get("sfx_point.ogg", Sound.class);
         setSize(Configuration.SCREEN_WIDTH,
                 groundTextRegion.getRegionHeight());
         setPosition(0, 0);
@@ -48,6 +53,9 @@ public class Tube extends Actor {
         topRect.width=topTubeTextRegion.getRegionWidth();
         bottomRect.width=bottomTubeTextRegion.getRegionWidth();
         bottomRect.y=Configuration.groundHeight;
+        scoreRect.width=topRect.width;
+        scoreRect.y=bottomRect.y;
+        scoreRect.height=Configuration.SCREEN_HEIGHT-Configuration.groundHeight;
         generateLevelData();
 
     }
@@ -56,6 +64,7 @@ public class Tube extends Actor {
 
     public void generateLevelData(){
         tubePositionArray.clear();
+        score=-1;
         int tubeLength=Configuration.SCREEN_HEIGHT-Configuration.groundHeight;
         for(int i=0;i<150;i++){
             TubePosition tubePosition=new TubePosition();
@@ -99,6 +108,14 @@ public class Tube extends Actor {
                 if(collide) {
                     hitSound.play();
                     return true;
+                }
+
+                scoreRect.x=tubePosition.posX;
+                if(scoreRect.contains(x,y)){
+                    if(score<i){
+                        score=i;
+                        pointSound.play();
+                    }
                 }
 
 

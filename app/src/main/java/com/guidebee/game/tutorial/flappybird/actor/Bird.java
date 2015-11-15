@@ -57,6 +57,15 @@ public class Bird extends Actor {
 
     }
 
+    public void reset(){
+        setPosition(Configuration.BIRD_START_X, Configuration.BIRD_START_Y);
+        position.set(Configuration.BIRD_START_X, Configuration.BIRD_START_Y, 0);
+        velocity.set(0,0,0);
+        setRotation(0);
+        isLive=true;
+
+
+    }
 
     public boolean isOutside() {
         return (position.y <= Configuration.groundHeight

@@ -2,6 +2,7 @@ package com.guidebee.game.tutorial.flappybird.actor;
 
 
 
+import com.guidebee.game.audio.Sound;
 import com.guidebee.game.graphics.Animation;
 import com.guidebee.game.graphics.TextureAtlas;
 import com.guidebee.game.graphics.TextureRegion;
@@ -29,6 +30,7 @@ public class Bird extends Actor {
 
     private Vector3 position;
     private Vector3 velocity;
+    private final Sound flapSound;
 
 
     public Bird(){
@@ -36,6 +38,7 @@ public class Bird extends Actor {
 
         TextureAtlas textureAtlas=assetManager.get("flappybird.atlas",TextureAtlas.class);
         birdTextRegion = textureAtlas.findRegion("birdanimation");
+        flapSound=assetManager.get("sfx_wing.ogg",Sound.class);
         Array<TextureRegion> keyFrames=new Array<TextureRegion>();
         for(int i=0;i<SPRITE_FRAME_SIZE;i++){
             TextureRegion textureRegion=new TextureRegion(birdTextRegion,i*SPRITE_WIDTH,0,
@@ -63,6 +66,7 @@ public class Bird extends Actor {
         if(input.isTouched()) {
             rotateBy(30*delta);
             velocity.y = 250;
+            flapSound.play();
 
         }else{
             rotateBy(-20*delta);

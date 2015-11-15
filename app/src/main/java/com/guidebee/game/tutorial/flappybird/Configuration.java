@@ -8,7 +8,8 @@ public class Configuration {
     public final static int BIRD_START_X=300;
     public final static int BIRD_START_Y=300;
 
-    public final static int MOVE_STEP =18;
+    public final static int MOVE_SPEED =5;
+    public final static int MIN_GAP=100;
 
 
 }

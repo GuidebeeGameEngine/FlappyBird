@@ -15,8 +15,9 @@ public class Background extends Actor {
 
     private final TextureRegion backgroundTextRegion;
     private final TextureRegion skyTextureRegion;
-    private final int moveStep=2;
+    private final int moveStep=1;
     private int offset;
+    private boolean stopMoving=false;
 
 
     public Background(){
@@ -28,6 +29,10 @@ public class Background extends Actor {
         setSize(Configuration.SCREEN_WIDTH,
                 Configuration.SCREEN_HEIGHT);
 
+    }
+
+    public void setStopMoving(boolean stop){
+        stopMoving=stop;
     }
 
     @Override
@@ -45,8 +50,10 @@ public class Background extends Actor {
         if(widthSize*backWidth<Configuration.SCREEN_WIDTH) widthSize++;
 
 
-        offset+=moveStep;
-        offset %= backWidth;
+        if(!stopMoving) {
+            offset += moveStep;
+            offset %= backWidth;
+        }
         for(int i=0;i<widthSize+1;i++) {
             batch.draw(backgroundTextRegion,-offset +i*backWidth,Configuration.groundHeight);
             for(int j=0;j<skyHeight;j++){

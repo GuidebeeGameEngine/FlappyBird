@@ -17,10 +17,5 @@ public class TubePosition {
      */
     public int buttomTubeHeight;
 
-    /**
-     * the space between this and next tube.
-     */
-    public int space;
-
 
 }

@@ -26,6 +26,9 @@ public class FlappyBirdGamePlay extends GamePlay {
         assetManager.load("flappybird.atlas", TextureAtlas.class);
         assetManager.load("music.mp3", Music.class);
         assetManager.load("sfx_wing.ogg",Sound.class);
+        assetManager.load("sfx_die.ogg",Sound.class);
+        assetManager.load("sfx_hit.ogg",Sound.class);
+        assetManager.load("sfx_point.ogg",Sound.class);
         assetManager.finishLoading();
         TextureAtlas textureAtlas=assetManager.get("flappybird.atlas",TextureAtlas.class);
         TextureRegion groundTextRegion =textureAtlas.findRegion("ground");

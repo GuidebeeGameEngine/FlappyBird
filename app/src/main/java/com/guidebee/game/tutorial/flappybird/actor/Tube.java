@@ -1,11 +1,13 @@
 package com.guidebee.game.tutorial.flappybird.actor;
 
+import com.guidebee.game.audio.Sound;
 import com.guidebee.game.graphics.Batch;
 import com.guidebee.game.graphics.TextureAtlas;
 import com.guidebee.game.graphics.TextureRegion;
 import com.guidebee.game.scene.Actor;
 import com.guidebee.game.tutorial.flappybird.Configuration;
 import com.guidebee.game.tutorial.flappybird.state.TubePosition;
+import com.guidebee.math.geometry.Rectangle;
 import com.guidebee.utils.collections.Array;
 
 import java.util.Random;
@@ -13,7 +15,7 @@ import java.util.Random;
 import static com.guidebee.game.GameEngine.assetManager;
 
 
-public class Ground  extends Actor {
+public class Tube extends Actor {
 
     private final TextureRegion groundTextRegion;
     private final TextureRegion bottomTubeTextRegion;
@@ -25,29 +27,41 @@ public class Ground  extends Actor {
     private Array<TubePosition> tubePositionArray=new Array<TubePosition>();
     private final Random random=new Random();
 
-    public Ground(){
-        super("Ground");
+    private final Rectangle topRect=new Rectangle();
+    private final Rectangle bottomRect=new Rectangle();
+    private boolean stopMoving=false;
+
+    private final Sound hitSound;
+
+    public Tube(){
+        super("Tube");
         TextureAtlas textureAtlas=assetManager.get("flappybird.atlas",TextureAtlas.class);
         groundTextRegion =textureAtlas.findRegion("ground");
         bottomTubeTextRegion =textureAtlas.findRegion("bottomtube");
         topTubeTextRegion=textureAtlas.findRegion("toptube");
+        hitSound = assetManager.get("sfx_hit.ogg", Sound.class);
         setSize(Configuration.SCREEN_WIDTH,
                 groundTextRegion.getRegionHeight());
         setPosition(0, 0);
         moveStep=Configuration.MOVE_SPEED;
         offset=0;
+        topRect.width=topTubeTextRegion.getRegionWidth();
+        bottomRect.width=bottomTubeTextRegion.getRegionWidth();
+        bottomRect.y=Configuration.groundHeight;
         generateLevelData();
 
     }
+
+
 
     public void generateLevelData(){
         tubePositionArray.clear();
         int tubeLength=Configuration.SCREEN_HEIGHT-Configuration.groundHeight;
         for(int i=0;i<150;i++){
             TubePosition tubePosition=new TubePosition();
-            tubePosition.posX=Configuration.SCREEN_WIDTH/2*i + random.nextInt(20);
-            tubePosition.space=Configuration.SCREEN_WIDTH/2 + random.nextInt(100)+100;
-            tubePosition.topTubeHeight=random.nextInt(tubeLength);
+            tubePosition.posX=Configuration.SCREEN_WIDTH/2*i + random.nextInt(100)+
+               Configuration.SCREEN_WIDTH*3;
+             tubePosition.topTubeHeight=random.nextInt(tubeLength);
             if(tubePosition.topTubeHeight>topTubeTextRegion.getRegionHeight()){
                 tubePosition.topTubeHeight=topTubeTextRegion.getRegionHeight();
             }
@@ -67,13 +81,56 @@ public class Ground  extends Actor {
     }
 
 
+    public boolean isCollideWithTube(float x ,float y){
+        for(int i=0;i<tubePositionArray.size;i++){
+            TubePosition tubePosition=tubePositionArray.get(i);
+            if(tubePosition.posX>-bottomTubeTextRegion.getRegionWidth()
+                    && tubePosition.posX<Configuration.SCREEN_WIDTH){
+
+                topRect.x=tubePosition.posX;
+                topRect.y=Configuration.SCREEN_HEIGHT-tubePosition.topTubeHeight;
+                topRect.height=tubePosition.topTubeHeight;
+
+                bottomRect.x=tubePosition.posX;
+
+                bottomRect.height=tubePosition.buttomTubeHeight;
+
+                boolean collide=topRect.contains(x,y) || bottomRect.contains(x,y);
+                if(collide) {
+                    hitSound.play();
+                    return true;
+                }
+
+
+            }
+
+        }
+        return false;
+    }
+
+    public void setStopMoving(boolean stop){
+        stopMoving=stop;
+    }
+
+    @Override
+    public void act (float delta){
+        if(!stopMoving) {
+            for (int i = 0; i < tubePositionArray.size; i++) {
+                TubePosition tubePosition = tubePositionArray.get(i);
+                tubePosition.posX -= moveStep;
+            }
+        }
+    }
+
     @Override
     public void draw (Batch batch, float parentAlpha){
         int backWidth= groundTextRegion.getRegionWidth();
         int size=Configuration.SCREEN_WIDTH/backWidth;
         if(size*backWidth<Configuration.SCREEN_WIDTH) size++;
-        offset+=moveStep;
-        offset %= backWidth;
+        if(!stopMoving) {
+            offset += moveStep;
+            offset %= backWidth;
+        }
         for(int i=-1;i<size;i++) {
             batch.draw(groundTextRegion,offset + i*backWidth,0);
         }
@@ -88,7 +145,7 @@ public class Ground  extends Actor {
                 batch.draw(topTubeTextRegion,tubePosition.posX,
                         Configuration.SCREEN_HEIGHT-tubePosition.topTubeHeight);
             }
-            tubePosition.posX-=moveStep;
+
         }
 
     }

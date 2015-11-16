@@ -107,6 +107,230 @@ public class Configuration {
  
 }
 ```
+This class defines some configuration (like screen size ,initial bird position etc) for the Flappybird game.
+
+#TubePosition class
+```
+package com.guidebee.game.tutorial.flappybird.state;
+ 
+//[------------------------------ MAIN CLASS ----------------------------------]
+ 
+/**
+ * Tube state.
+ * @author James Shen <james.shen@guidebee.com>
+ */
+public class TubePosition {
+    /**
+     * Tube x location
+     */
+    public int posX;
+ 
+    /**
+     * top tube height
+     */
+    public int topTubeHeight;
+ 
+    /**
+     * button tube height
+     */
+    public int bottomTubeHeight;
+ 
+ 
+}
+```
+This class store position state for each tube pair (top tube and bottom tube).
+
+#StartButton class
+
+```
+package com.guidebee.game.tutorial.flappybird.actor;
+ 
+//--------------------------------- IMPORTS ------------------------------------
+import com.guidebee.game.graphics.TextureAtlas;
+import com.guidebee.game.graphics.TextureRegion;
+import com.guidebee.game.scene.Actor;
+import com.guidebee.game.tutorial.flappybird.Configuration;
+import com.guidebee.game.tutorial.flappybird.FlappyBirdStage;
+import com.guidebee.math.Vector3;
+ 
+import static com.guidebee.game.GameEngine.assetManager;
+import static com.guidebee.game.GameEngine.input;
+ 
+//[------------------------------ MAIN CLASS ----------------------------------]
+ 
+/**
+ * Start game button.
+ * @author James Shen <james.shen@guidebee.com>
+ */
+public class StartButton extends Actor {
+ 
+    private final FlappyBirdStage flappyBirdStage;
+ 
+    public StartButton(FlappyBirdStage stage) {
+        super("StartButton");
+        flappyBirdStage = stage;
+        TextureAtlas textureAtlas = assetManager.get("flappybird.atlas",
+                TextureAtlas.class);
+        TextureRegion buttonTextRegion = textureAtlas.findRegion("playbtn");
+        setTextureRegion(buttonTextRegion);
+        //show in the center of the screen.
+        setPosition((Configuration.SCREEN_WIDTH
+                        - buttonTextRegion.getRegionWidth()) / 2,
+                (Configuration.SCREEN_HEIGHT
+                        - buttonTextRegion.getRegionHeight()) / 2);
+ 
+    }
+ 
+ 
+    @Override
+    public void act(float delta) {
+        if (input.isTouched()) {
+            //handel touch event
+            Vector3 touchPos = new Vector3();
+            touchPos.set(input.getX(), input.getY(), 0);
+            getStage().getCamera().unproject(touchPos);
+            if (getBoundingAABB().contains(touchPos.x, touchPos.y)) {
+                flappyBirdStage.removeStartButton();
+                flappyBirdStage.startGame();
+            }
+        }
+    }
+}
+```
+
+StartButton is a type of Actor, it’s only purpose is to start the game.
+
+#GameOver class
+
+```
+package com.guidebee.game.tutorial.flappybird.actor;
+ 
+//--------------------------------- IMPORTS ------------------------------------
+import com.guidebee.game.graphics.TextureAtlas;
+import com.guidebee.game.graphics.TextureRegion;
+import com.guidebee.game.scene.Actor;
+import com.guidebee.game.tutorial.flappybird.Configuration;
+ 
+import static com.guidebee.game.GameEngine.assetManager;
+ 
+//[------------------------------ MAIN CLASS ----------------------------------]
+ 
+/**
+ * Game over image.
+ * @author James Shen <james.shen@guidebee.com>
+ */
+public class GameOver extends Actor {
+ 
+    public GameOver() {
+        super("StartButton");
+ 
+        TextureAtlas textureAtlas = assetManager.get("flappybird.atlas",
+                TextureAtlas.class);
+        TextureRegion buttonTextRegion = textureAtlas.findRegion("gameover");
+        setTextureRegion(buttonTextRegion);
+        //initial position.
+        setPosition((Configuration.SCREEN_WIDTH
+                        - buttonTextRegion.getRegionWidth()) / 2,
+                (Configuration.SCREEN_HEIGHT) / 2
+                        + buttonTextRegion.getRegionHeight());
+        setVisible(false);
+    }
+}
+```
+The GameOver is also a simple actor, it’s purpose is to display “Game Over” on screen, initially it’s invisible.
+
+#Background class
+
+```
+package com.guidebee.game.tutorial.flappybird.actor;
+ 
+//--------------------------------- IMPORTS ------------------------------------
+import com.guidebee.game.graphics.Batch;
+import com.guidebee.game.graphics.TextureAtlas;
+import com.guidebee.game.graphics.TextureRegion;
+import com.guidebee.game.scene.Actor;
+import com.guidebee.game.tutorial.flappybird.Configuration;
+ 
+import static com.guidebee.game.GameEngine.assetManager;
+ 
+//[------------------------------ MAIN CLASS ----------------------------------]
+ 
+/**
+ * Game background, i.e. the remote building and trees.
+ * @author James Shen <james.shen@guidebee.com>
+ */
+public class Background extends Actor {
+ 
+    private final TextureRegion backgroundTextRegion;
+    private final TextureRegion skyTextureRegion;
+    /**
+     * the background move a bit slow because it's far way.
+     */
+    private final int moveStep = 1;
+    private int offset;
+    private boolean stopMoving = false;
+ 
+ 
+    public Background() {
+        super("Background");
+        TextureAtlas textureAtlas = assetManager.get("flappybird.atlas",
+                TextureAtlas.class);
+        backgroundTextRegion = textureAtlas.findRegion("bg");
+        skyTextureRegion = textureAtlas.findRegion("sky");
+ 
+        setSize(Configuration.SCREEN_WIDTH,
+                Configuration.SCREEN_HEIGHT);
+ 
+    }
+ 
+    public void setStopMoving(boolean stop) {
+        stopMoving = stop;
+    }
+ 
+    @Override
+    public void draw(Batch batch, float parentAlpha) {
+        int backWidth = backgroundTextRegion.getRegionWidth();
+        int skyHeight = skyTextureRegion.getRegionHeight();
+        int widthSize = Configuration.SCREEN_WIDTH / backWidth;
+        int remainSize = Configuration.SCREEN_WIDTH
+                - Configuration.groundHeight
+                - backgroundTextRegion.getRegionHeight();
+        int skySize = 0;
+        if (remainSize > 0) {
+            skySize = remainSize / skyHeight;
+            if (skySize * skyHeight < remainSize) skySize++;
+        }
+        if (widthSize * backWidth < Configuration.SCREEN_WIDTH) widthSize++;
+ 
+ 
+        /**
+         * animation -- moving slowly.
+         */
+        if (!stopMoving) {
+            offset += moveStep;
+            offset %= backWidth;
+        }
+        for (int i = 0; i < widthSize + 1; i++) {
+            batch.draw(backgroundTextRegion, -offset + i * backWidth,
+                    Configuration.groundHeight);
+            for (int j = 0; j < skyHeight; j++) {
+                batch.draw(skyTextureRegion, -offset + i * backWidth,
+                        Configuration.groundHeight
+                        + backgroundTextRegion.getRegionHeight()
+                                + j * skyHeight);
+            }
+        }
+    }
+}
+```
+
+The background class is used to display remote building and trees, here we override the draw method, we use smaller image(tiles) to make bigger images and slowing moving the building and tree a bit to show they are far way.
+Note: Remember to use “Nearest” as filtering mode when packing the texture atlas ,dont use “Linear” filtering, otherwise you may find “gaps” between these tiles:
+
+![alt text](http://i2.wp.com/www.guidebee.com.au/wordpress/wp-content/uploads/2015/11/gapsflappybird.png "Game Design")
+
+
+
 
 
 

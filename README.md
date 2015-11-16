@@ -586,8 +586,11 @@ As mentioned before, we decided to use on Tube actor to represent all the tubes 
  * all tube positions.
  */
 private Array<TubePosition> tubePositionArray = new Array<TubePosition>();
+```
+
 Also we want to randomly generated all the tubes ,their positions, height of top tubes and bottom tubes:
 
+```
 /**
  * random generate the tube positions.
  */

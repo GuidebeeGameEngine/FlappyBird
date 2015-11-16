@@ -333,6 +333,532 @@ Note: Remember to use “Nearest” as filtering mode when packing the texture a
 
 ![alt text](http://i2.wp.com/www.guidebee.com.au/wordpress/wp-content/uploads/2015/11/gapsflappybird.png "Game Design")
 
+#Create the project
+
+
+As a reminder,we create an Android Gradle project (FlappBird) with Android Studio , in the app’s build.gradle, add guidebee game engine dependencies
+‘compile com.guidebee:game-engine:0.9.8’
+
+```
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:19+'
+    compile 'com.guidebee:game-engine:0.9.8'
+}
+
+```
+Add related resources and scaffolding classes (code).
+
+#Project Structure
+![alt text](http://i2.wp.com/www.guidebee.com.au/wordpress/wp-content/uploads/2015/11/flappybirdproject.png "Game Design")
+
+#scaffolding classes
+
+Scaffolding classes  : FlappbirdGameActivity, FlappingBirdGamePlay and FlappingBirdScene connect Game Logic /Scene with Android Platform. Their implementations are almost the same for most of games use Guidebee Game Engine.
+
+For the game scene, we still want to use 800 X 480 virtual screen resolution and want to an customized stage instead of build-in stage defined in Scene. so our FlappyBirdScene derived from ScreenAdapter instead of Scene. most of code are copied from Scene class:
+
+```
+//--------------------------------- PACKAGE ------------------------------------
+package com.guidebee.game.tutorial.flappybird;
+ 
+//--------------------------------- IMPORTS ------------------------------------
+import com.guidebee.game.ScreenAdapter;
+import com.guidebee.game.camera.viewports.StretchViewport;
+ 
+import static com.guidebee.game.GameEngine.assetManager;
+import static com.guidebee.game.GameEngine.graphics;
+ 
+//[------------------------------ MAIN CLASS ----------------------------------]
+ 
+/**
+ * Flappy bird Game Scene.
+ * @author James Shen <james.shen@guidebee.com>
+ */
+public class FlappyBirdScene extends ScreenAdapter {
+ 
+ 
+    /**
+     * scene associated stage.
+     */
+    protected final FlappyBirdStage sceneStage;
+ 
+ 
+ 
+    /**
+     * Default constructor.
+     */
+    public FlappyBirdScene() {
+        sceneStage = new FlappyBirdStage(
+                new StretchViewport(Configuration.SCREEN_WIDTH,
+                Configuration.SCREEN_HEIGHT));
+ 
+ 
+    }
+ 
+ 
+    @Override
+    public void render(float delta) {
+        graphics.clearScreen(0, 0, 0.2f, 1);
+        sceneStage.act();
+        sceneStage.draw();
+    }
+ 
+ 
+    @Override
+    public void dispose() {
+        sceneStage.dispose();
+        assetManager.dispose();
+ 
+    }
+ 
+    @Override
+    public void pause() {
+        sceneStage.pauseGame();
+ 
+    }
+ 
+    @Override
+    public void show() {
+        sceneStage.resumeGame();
+ 
+    }
+ 
+    @Override
+    public void resize(int width, int height) {
+        sceneStage.getViewport().update(width, height, false);
+    }
+ 
+}
+
+```
+
+FlappyBirdScene includes the FlappyBirdStage ,which is the main Stage for the game. when player switch to other application(like taking calls). the life cycle event pause and show will accordingly pause and resume game, these methods are defined in FlappyBirdStage.
+
+#Bird class
+Let’s first focus on our main actor class -Bird.  Bird (Fapy) has animations (flapping it’s wings). So we use Animation class .
+
+```
+private float tick = 0.05f;
+private final Animation flyAnimation;
+private final TextureRegion birdTextRegion;
+ 
+private final int SPRITE_WIDTH = 34;
+private final int SPRITE_HEIGHT = 24;
+private final int SPRITE_FRAME_SIZE = 3;
+...
+TextureAtlas textureAtlas = assetManager.get("flappybird.atlas",
+                TextureAtlas.class);
+birdTextRegion = textureAtlas.findRegion("birdanimation");
+Array<TextureRegion> keyFrames = new Array<TextureRegion>();
+for (int i = 0; i < SPRITE_FRAME_SIZE; i++) {
+    TextureRegion textureRegion = new TextureRegion(birdTextRegion,
+            i * SPRITE_WIDTH, 0,
+            SPRITE_WIDTH, SPRITE_HEIGHT);
+    keyFrames.add(textureRegion);
+}
+flyAnimation = new Animation(tick, keyFrames);
+
+```
+
+To achieve animation ,in Bird’s act method, we constantly change Bird’s image with one of key frame in the animation object.
+
+```
+
+setTextureRegion(flyAnimation.getKeyFrame(elapsedTime, true));
+```
+By default, if player doesn’t touch the screen, the Bird will following free-fall movement, we can use Box2D graphics, but for this simple game, it’s a overkill, instead we use simple math to calculate new position for the bird.
+
+```
+private static final int GRAVITY = -100;
+private static final int MOVEMENT = 100;
+private Vector3 position;
+private Vector3 velocity;
+...
+setPosition(Configuration.BIRD_START_X,
+                Configuration.BIRD_START_Y);
+position = new Vector3(Configuration.BIRD_START_X,
+        Configuration.BIRD_START_Y, 0);
+velocity = new Vector3(0, 0, 0);
+ 
+...
+/**
+ * calculate bird's new position --free fall.
+ */
+velocity.add(0, GRAVITY, 0);
+velocity.scl(delta);
+position.add(MOVEMENT * delta, velocity.y, 0);
+...
+/**
+ * make sure the bird not to pass through the ground.
+ */
+if (position.y < Configuration.groundHeight) {
+    position.y = Configuration.groundHeight;
+}
+setY(position.y);
+
+```
+
+We also make sure bird doesn’t fall through the ground area, the bird initially was put in center (slight on the left) of the screen. and can only move up and down.
+
+When player touch the screen ,this gives the bird a boost up ,we need to handle the touch event, we use pooling to handle this event:
+
+```
+/**
+ * handle touch event, move the bird upward a bit
+ */
+if (input.isTouched()) {
+    rotateBy(30 * delta);
+    velocity.y = 250;
+    if (nextSoundPeriod > 0.3) {
+        flapSound.play();
+        nextSoundPeriod = 0;
+    }
+ 
+} else {
+    rotateBy(-20 * delta);
+ 
+}
+ 
+/**
+ * control the bird's turning angle.
+ */
+float currentAngle = getRotation();
+if (currentAngle < -90 && currentAngle < 0) { 
+      setRotation(-90);
+ }
+ if (currentAngle > 90 && currentAngle > 0) {
+    setRotation(90);
+}
+
+```
+to make a better simulation of bird, we only turn Fapy’s head up and down a bit when he flies. this is why setRotation and rotateBy are used, and we dont want the bird to turn around and around, it can only turn from -90 to 90 degree.
+
+Bird also have one state variable ,isLive or not. and one method to check if the bird fly within the screen:
+
+```
+public boolean isOutside() {
+    return (position.y <= Configuration.groundHeight 
+       || position.y >= Configuration.SCREEN_HEIGHT);
+}
+
+```
+
+and if the bird was killed ,or player start a new game, we need to reset the state of the bird:
+
+```
+public void reset() {
+    setPosition(Configuration.BIRD_START_X,
+            Configuration.BIRD_START_Y);
+    position.set(Configuration.BIRD_START_X,
+            Configuration.BIRD_START_Y, 0);
+    velocity.set(0, 0, 0);
+    setRotation(0);
+    isLive = true;
+ 
+ 
+}
+ 
+ 
+public void killBird() {
+    isLive = false;
+    setRotation(180);
+    dieSound.play();
+    setTextureRegion(flyAnimation.getKeyFrame(0));
+}
+ 
+public boolean isLive() {
+    return isLive;
+}
+ 
+public void setLive(boolean live) {
+    isLive = live;
+}
+
+```
+
+#Tube class
+As mentioned before, we decided to use on Tube actor to represent all the tubes in the game scene.  for all the tubes ,we use one array of TubePosition to store the tubes’s state:
+
+```
+/**
+ * all tube positions.
+ */
+private Array<TubePosition> tubePositionArray = new Array<TubePosition>();
+Also we want to randomly generated all the tubes ,their positions, height of top tubes and bottom tubes:
+
+/**
+ * random generate the tube positions.
+ */
+public void generateLevelData() {
+    tubePositionArray.clear();
+    score = -1;
+    int tubeLength = Configuration.SCREEN_HEIGHT
+            - Configuration.groundHeight;
+    for (int i = 0; i < 150; i++) {
+        TubePosition tubePosition = new TubePosition();
+        tubePosition.posX = Configuration.SCREEN_WIDTH / 2 * i
+                + random.nextInt(100) +
+                Configuration.SCREEN_WIDTH * 3;
+        tubePosition.topTubeHeight = random.nextInt(tubeLength);
+        if (tubePosition.topTubeHeight
+                > topTubeTextRegion.getRegionHeight()) {
+            tubePosition.topTubeHeight
+                    = topTubeTextRegion.getRegionHeight();
+        }
+        tubePosition.bottomTubeHeight = tubeLength
+                - tubePosition.topTubeHeight
+                - Configuration.MIN_GAP - random.nextInt(30);
+        if (tubePosition.bottomTubeHeight < 0) {
+            tubePosition.bottomTubeHeight = 10;
+        }
+ 
+        if (tubeLength - tubePosition.topTubeHeight
+                - tubePosition.bottomTubeHeight
+                < Configuration.MIN_GAP) {
+            tubePosition.topTubeHeight = 100;
+            tubePosition.bottomTubeHeight = 100;
+        }
+        tubePositionArray.add(tubePosition);
+    }
+}
+
+```
+
+
+These code has logic to make sure the gap distance between top tube and bottom tubes have a minimum safe distance Configuration.MIN_GAP to allow the bird fly through.
+
+For the tube’s draw method, since the tube manager all the tubes, it needs to draw all tubes which currently with screen area:
+
+```
+@Override
+public void draw(Batch batch, float parentAlpha) {
+    int backWidth = groundTextRegion.getRegionWidth();
+    int size = Configuration.SCREEN_WIDTH / backWidth;
+    if (size * backWidth < Configuration.SCREEN_WIDTH) size++;
+    //make the ground moving animation.
+    if (!stopMoving) {
+        offset += moveStep;
+        offset %= backWidth;
+    }
+    for (int i = -1; i < size; i++) {
+        batch.draw(groundTextRegion, offset + i * backWidth, 0);
+    }
+    for (int i = 0; i < tubePositionArray.size; i++) {
+        TubePosition tubePosition = tubePositionArray.get(i);
+        if (tubePosition.posX > -bottomTubeTextRegion.getRegionWidth()
+                && tubePosition.posX < Configuration.SCREEN_WIDTH) {
+ 
+            batch.draw(bottomTubeTextRegion, tubePosition.posX,
+                    Configuration.groundHeight,
+                    bottomTubeTextRegion.getRegionWidth(),
+                    tubePosition.bottomTubeHeight);
+            batch.draw(topTubeTextRegion, tubePosition.posX,
+                    Configuration.SCREEN_HEIGHT
+                            - tubePosition.topTubeHeight);
+        }
+ 
+    }
+ 
+}
+
+```
+
+
+The Tube also in charge the ground drawing, we could use a separate Actor to do this, but it’s easier to merge the Ground Actor to Tube.
+
+Since the bird only moves up and down, we need to move tubes left continuously to achieving Bird flying animation. so in tube’s act methods, we move all tubes left a bit.
+
+```
+@Override
+public void act(float delta) {
+    if (!stopMoving) {
+        for (int i = 0; i < tubePositionArray.size; i++) {
+            TubePosition tubePosition = tubePositionArray.get(i);
+            tubePosition.posX -= moveStep;
+        }
+    }
+}
+```
+
+We also need a method to check if the bird collides with tubes and if the bird flies pass through the gaps between top and bottom tubes:
+
+```
+public boolean isCollideWithTube(float x, float y) {
+    for (int i = 0; i < tubePositionArray.size; i++) {
+        TubePosition tubePosition = tubePositionArray.get(i);
+        if (tubePosition.posX
+                > -bottomTubeTextRegion.getRegionWidth()
+                && tubePosition.posX
+                < Configuration.SCREEN_WIDTH) {
+ 
+            topRect.x = tubePosition.posX;
+            topRect.y = Configuration.SCREEN_HEIGHT
+                    - tubePosition.topTubeHeight;
+            topRect.height = tubePosition.topTubeHeight;
+ 
+            bottomRect.x = tubePosition.posX;
+ 
+            bottomRect.height = tubePosition.bottomTubeHeight;
+ 
+            boolean collide = topRect.contains(x, y)
+                    || bottomRect.contains(x, y);
+            if (collide) {
+                hitSound.play();
+                return true;
+            }
+ 
+            scoreRect.x = tubePosition.posX;
+            if (scoreRect.contains(x, y)) {
+                if (score < i) {
+                    score = i;
+                    pointSound.play();
+                }
+            }
+ 
+ 
+        }
+ 
+    }
+    return false;
+}
+
+```
+for collision detection, we used simple rectangle contain method.
+
+#FlappyBirdStage class
+
+Now we have all the actors ready, it’s time to put them on stage, and in stage’s act method, we check if reaches game’s end state (Fapy hit the tube or touches sky or touches ground)
+Since most of logic were defined in individual Actors ,the stage class is a bit simple.
+
+
+```
+package com.guidebee.game.tutorial.flappybird;
+ 
+//--------------------------------- IMPORTS ------------------------------------
+import com.guidebee.game.audio.Music;
+import com.guidebee.game.camera.viewports.Viewport;
+import com.guidebee.game.scene.Group;
+import com.guidebee.game.scene.Stage;
+import com.guidebee.game.tutorial.flappybird.actor.Background;
+import com.guidebee.game.tutorial.flappybird.actor.Bird;
+import com.guidebee.game.tutorial.flappybird.actor.GameOver;
+import com.guidebee.game.tutorial.flappybird.actor.StartButton;
+import com.guidebee.game.tutorial.flappybird.actor.Tube;
+import com.guidebee.game.tutorial.flappybird.hud.Score;
+ 
+import static com.guidebee.game.GameEngine.assetManager;
+ 
+//[------------------------------ MAIN CLASS ----------------------------------]
+ 
+/**
+ * Flappy bird game stage.
+ * @author James Shen <james.shen@guidebee.com>
+ */
+public class FlappyBirdStage extends Stage {
+ 
+    private final Bird bird;
+    private final Background background;
+    private final Tube tube;
+ 
+    private final Group actorGroup = new Group();
+    private final StartButton startButton;
+    private final GameOver gameOver;
+    private final Score score;
+    private final Music music;
+ 
+    private volatile boolean paused=false;
+ 
+ 
+    public FlappyBirdStage(Viewport viewport) {
+        super(viewport);
+        addActor(actorGroup);
+ 
+        bird = new Bird();
+        bird.setPosition(-100, -100);
+        addActor(bird);
+ 
+        tube = new Tube();
+        addActor(tube);
+        tube.toBack();
+ 
+        background = new Background();
+        addActor(background);
+        background.toBack();
+ 
+        startButton = new StartButton(this);
+        actorGroup.addActor(startButton);
+ 
+        gameOver = new GameOver();
+        actorGroup.addActor(gameOver);
+        actorGroup.toFront();
+ 
+        score = new Score();
+        addHUDComponent(score);
+ 
+        bird.setLive(false);
+        tube.setStopMoving(true);
+        background.setStopMoving(true);
+ 
+        music = assetManager.get("music.mp3", Music.class);
+        music.setLooping(true);
+ 
+    }
+ 
+    public void removeStartButton() {
+        startButton.setVisible(false);
+        gameOver.setVisible(false);
+    }
+ 
+    public void startGame() {
+        paused=false;
+        bird.reset();
+        tube.generateLevelData();
+        tube.setStopMoving(false);
+        background.setStopMoving(false);
+        music.play();
+    }
+ 
+    private void GameOver(){
+        bird.killBird();
+        startButton.setVisible(true);
+        gameOver.setVisible(true);
+        tube.setStopMoving(true);
+        background.setStopMoving(true);
+        music.stop();
+    }
+ 
+ 
+    public void pauseGame(){
+        paused=true;
+        music.stop();
+    }
+ 
+ 
+    public void resumeGame(){
+        paused=false;
+        music.play();
+    }
+ 
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        if(!paused) {
+            if (bird.isLive()) {
+                score.setScore(tube.getScore());
+                if (tube.isCollideWithTube(bird.getX(), bird.getY())
+                        || bird.isOutside()) {
+                    GameOver();
+                }
+            }
+        }
+    }
+ 
+ 
+}
+
+```
 
 
 

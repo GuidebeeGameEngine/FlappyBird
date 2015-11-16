@@ -18,9 +18,7 @@ package com.guidebee.game.tutorial.flappybird;
 
 //--------------------------------- IMPORTS ------------------------------------
 import com.guidebee.game.ScreenAdapter;
-import com.guidebee.game.audio.Music;
 import com.guidebee.game.camera.viewports.StretchViewport;
-import com.guidebee.game.scene.Stage;
 
 import static com.guidebee.game.GameEngine.assetManager;
 import static com.guidebee.game.GameEngine.graphics;

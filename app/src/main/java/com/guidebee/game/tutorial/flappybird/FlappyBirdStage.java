@@ -92,6 +92,7 @@ public class FlappyBirdStage extends Stage {
     }
 
     public void startGame() {
+        paused=false;
         bird.reset();
         tube.generateLevelData();
         tube.setStopMoving(false);

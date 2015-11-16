@@ -3,7 +3,7 @@ Guidebee Game Engine - FlappyBird Demo
 
 Now we have the basic knowledge of Guidebee Game engine, and we encourage using the Stage-Actor pattern for your game design, it’s time to show a complete game. We use a very simple game Flappybird.
 
-[Guidebee IT Consulting Service Perth](https://www.guidebee.com.au)
+[Guidebee IT Consulting Service Perth](http://www.guidebee.com.au)
 
 #Idea
 Following the description of Flappbird on wiki — the FlappyBird’s GamePlay.

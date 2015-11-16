@@ -107,9 +107,11 @@ public class Configuration {
  
 }
 ```
+
 This class defines some configuration (like screen size ,initial bird position etc) for the Flappybird game.
 
 #TubePosition class
+
 ```
 package com.guidebee.game.tutorial.flappybird.state;
  
@@ -138,6 +140,7 @@ public class TubePosition {
  
 }
 ```
+
 This class store position state for each tube pair (top tube and bottom tube).
 
 #StartButton class
@@ -237,6 +240,7 @@ public class GameOver extends Actor {
     }
 }
 ```
+
 The GameOver is also a simple actor, it’s purpose is to display “Game Over” on screen, initially it’s invisible.
 
 #Background class

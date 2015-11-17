@@ -61,7 +61,7 @@ Following is the final design:
 Of course ,there’s other scaffolding classes like FlappyBirdGameActivity, FlappyBirdGamePlay, FlappyBirdScene, these classes are almost identical for all games ,these classes are just bridge classes to Android platform. we’ll ignore them for now. For the basics ,you can refer to Guidebee Android Game Engine Basics.
 
 #Configuration class 
-```
+```java
 package com.guidebee.game.tutorial.flappybird;
  
 //[------------------------------ MAIN CLASS ----------------------------------]
@@ -114,7 +114,7 @@ This class defines some configuration (like screen size ,initial bird position e
 
 #TubePosition class
 
-```
+```java
 package com.guidebee.game.tutorial.flappybird.state;
  
 //[------------------------------ MAIN CLASS ----------------------------------]
@@ -147,7 +147,7 @@ This class store position state for each tube pair (top tube and bottom tube).
 
 #StartButton class
 
-```
+```java
 package com.guidebee.game.tutorial.flappybird.actor;
  
 //--------------------------------- IMPORTS ------------------------------------
@@ -207,7 +207,7 @@ StartButton is a type of Actor, it’s only purpose is to start the game.
 
 #GameOver class
 
-```
+```java
 package com.guidebee.game.tutorial.flappybird.actor;
  
 //--------------------------------- IMPORTS ------------------------------------
@@ -247,7 +247,7 @@ The GameOver is also a simple actor, it’s purpose is to display “Game Over�
 
 #Background class
 
-```
+```java
 package com.guidebee.game.tutorial.flappybird.actor;
  
 //--------------------------------- IMPORTS ------------------------------------
@@ -361,7 +361,7 @@ Scaffolding classes  : FlappbirdGameActivity, FlappingBirdGamePlay and FlappingB
 
 For the game scene, we still want to use 800 X 480 virtual screen resolution and want to an customized stage instead of build-in stage defined in Scene. so our FlappyBirdScene derived from ScreenAdapter instead of Scene. most of code are copied from Scene class:
 
-```
+```java
 //--------------------------------- PACKAGE ------------------------------------
 package com.guidebee.game.tutorial.flappybird;
  
@@ -441,7 +441,7 @@ FlappyBirdScene includes the FlappyBirdStage ,which is the main Stage for the ga
 #Bird class
 Let’s first focus on our main actor class -Bird.  Bird (Fapy) has animations (flapping it’s wings). So we use Animation class .
 
-```
+```java
 private float tick = 0.05f;
 private final Animation flyAnimation;
 private final TextureRegion birdTextRegion;
@@ -466,13 +466,13 @@ flyAnimation = new Animation(tick, keyFrames);
 
 To achieve animation ,in Bird’s act method, we constantly change Bird’s image with one of key frame in the animation object.
 
-```
+```java
 
 setTextureRegion(flyAnimation.getKeyFrame(elapsedTime, true));
 ```
 By default, if player doesn’t touch the screen, the Bird will following free-fall movement, we can use Box2D graphics, but for this simple game, it’s a overkill, instead we use simple math to calculate new position for the bird.
 
-```
+```java
 private static final int GRAVITY = -100;
 private static final int MOVEMENT = 100;
 private Vector3 position;
@@ -506,7 +506,7 @@ We also make sure bird doesn’t fall through the ground area, the bird initiall
 
 When player touch the screen ,this gives the bird a boost up ,we need to handle the touch event, we use pooling to handle this event:
 
-```
+```java
 /**
  * handle touch event, move the bird upward a bit
  */
@@ -539,7 +539,7 @@ to make a better simulation of bird, we only turn Fapy’s head up and down a bi
 
 Bird also have one state variable ,isLive or not. and one method to check if the bird fly within the screen:
 
-```
+```java
 public boolean isOutside() {
     return (position.y <= Configuration.groundHeight 
        || position.y >= Configuration.SCREEN_HEIGHT);
@@ -549,7 +549,7 @@ public boolean isOutside() {
 
 and if the bird was killed ,or player start a new game, we need to reset the state of the bird:
 
-```
+```java
 public void reset() {
     setPosition(Configuration.BIRD_START_X,
             Configuration.BIRD_START_Y);
@@ -583,7 +583,7 @@ public void setLive(boolean live) {
 #Tube class
 As mentioned before, we decided to use on Tube actor to represent all the tubes in the game scene.  for all the tubes ,we use one array of TubePosition to store the tubes’s state:
 
-```
+```java
 /**
  * all tube positions.
  */
@@ -592,7 +592,7 @@ private Array<TubePosition> tubePositionArray = new Array<TubePosition>();
 
 Also we want to randomly generated all the tubes ,their positions, height of top tubes and bottom tubes:
 
-```
+```java
 /**
  * random generate the tube positions.
  */
@@ -636,7 +636,7 @@ These code has logic to make sure the gap distance between top tube and bottom t
 
 For the tube’s draw method, since the tube manager all the tubes, it needs to draw all tubes which currently with screen area:
 
-```
+```java
 @Override
 public void draw(Batch batch, float parentAlpha) {
     int backWidth = groundTextRegion.getRegionWidth();
@@ -675,7 +675,7 @@ The Tube also in charge the ground drawing, we could use a separate Actor to do 
 
 Since the bird only moves up and down, we need to move tubes left continuously to achieving Bird flying animation. so in tube’s act methods, we move all tubes left a bit.
 
-```
+```java
 @Override
 public void act(float delta) {
     if (!stopMoving) {
@@ -689,7 +689,7 @@ public void act(float delta) {
 
 We also need a method to check if the bird collides with tubes and if the bird flies pass through the gaps between top and bottom tubes:
 
-```
+```java
 public boolean isCollideWithTube(float x, float y) {
     for (int i = 0; i < tubePositionArray.size; i++) {
         TubePosition tubePosition = tubePositionArray.get(i);
@@ -738,7 +738,7 @@ Now we have all the actors ready, it’s time to put them on stage, and in stage
 Since most of logic were defined in individual Actors ,the stage class is a bit simple.
 
 
-```
+```java
 package com.guidebee.game.tutorial.flappybird;
  
 //--------------------------------- IMPORTS ------------------------------------
